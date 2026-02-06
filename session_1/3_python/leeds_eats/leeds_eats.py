@@ -5,36 +5,100 @@ import sqlite3
 # ==================================================
 
 def total_customers(conn):
-    pass
+    query = "SELECT COUNT(customer_id) FROM customers;"
+    cursor = conn.execute(query)
+    total_customers = cursor.fetchone()
 
+    if total_customers:
+        print(f"Total Customers: {total_customers}")
 
 def customer_signup_range(conn):
-    pass
-
+    query1 = "SELECT signup_date FROM customers ORDER BY signup_date ASC LIMIT 1;"
+    query2 = "SELECT signup_date FROM customers ORDER BY signup_date DESC LIMIT 1;"
+    cursor1 = conn.execute(query1)
+    cursor2 = conn.execute(query2)
+    earliest = cursor1.fetchone()
+    latest = cursor2.fetchone()
+    
+    if earliest and latest:
+        print(f"Earliest Sign Up Date: {earliest}")
+        print(f"Latest Sign Up Date: {latest}")
 
 def order_summary_stats(conn):
-    pass
+    query = "SELECT COUNT(order_id), AVG(order_total), MAX(order_total), MIN(order_total) FROM orders;"
+    cursor = conn.execute(query)
+    stats = cursor.fetchone()
 
+    if stats:
+        print(f"# of Orders: {stats[0]}")
+        print(f"Average Order Total: {stats[1]}")
+        print(f"Max. Order Total: {stats[2]}")
+        print(f"Min. Order Total: {stats[3]}")
 
 def driver_summary(conn):
-    pass
+    query1 = "SELECT COUNT(*) FROM drivers;"
+    query2 = "SELECT DISTINCT(hire_date) FROM drivers;"
+    cursor1 = conn.execute(query1)
+    cursor2 = conn.execute(query2)
+    num_drivers = cursor1.fetchone()
 
+    if num_drivers:
+        print(f"# of Drivers: {num_drivers}")
+    
+    print(f"Hire Dates")
+    for date in cursor2:
+        print(f"  {date}")
 
 # ==================================================
 # Section 2 – Key Statistics
 # ==================================================
 
 def orders_per_customer(conn):
-    pass
+    query = '''
+            SELECT C.customer_name, COUNT(O.order_Id), SUM(O.order_total)
+            FROM customers C LEFT JOIN orders O
+            ON C.customer_id = O.customer_id
+            GROUP BY C.customer_id;
+            '''
+    cursor = conn.execute(query)
+
+    for each in cursor:
+        print(f"Name: {each[0]}\t# of Orders: {each[1]}\tTotal Spent: {each[2]}")
 
 
 def driver_workload(conn):
-    pass
+    query = '''
+            SELECT DR.driver_name, COUNT(DL.delivery_id)
+            FROM drivers DR LEFT JOIN deliveries DL
+            ON DR.driver_id = DL.driver_id
+            GROUP BY DR.driver_id;
+            '''
+    cursor = conn.execute(query)
+
+    for each in cursor:
+        print(f"Name: {each[0]}\t# of Deliveries: {each[1]}")
 
 
 def delivery_lookup_by_id(conn, order_id):
-    pass
+    query = '''
+            SELECT C.customer_name, O.order_total, DL.delivery_date, DR.driver_name
+            FROM orders O
+            JOIN customers C ON O.customer_id = C.customer_id
+            JOIN deliveries DL ON O.order_id = DL.order_id
+            JOIN drivers DR ON DL.driver_id = DR.driver_id
+            WHERE O.order_id = ?;
+            '''
 
+    cursor = conn.execute(query, (order_id,))
+    delivery = cursor.fetchone()
+
+    if delivery:
+        print(f"Customer Name: {delivery[0]}")
+        print(f"Order Total: {delivery[1]}")
+        print(f"Delivery Date: {delivery[2]}")
+        print(f"Customer ID: {delivery[3]}")
+    else:
+        print("No such delivery found.")
 
 # ==================================================
 # Section 3 – Time-based Summaries
