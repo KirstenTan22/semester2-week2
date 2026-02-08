@@ -77,7 +77,7 @@ This saves you needing to then convert the tuples for use with matplotlib or the
 ### Level 4 – Stretch / Challenge (Optional)
 
 14. Find **customers with more than one order** and compute repeat purchase rate.  
-15. Determine **category co-occurrence**: which product categories are frequently ordered together? Visualise as a heatmap.  
+15. Determine **category co-occu rrence**: which product categories are frequently ordered together? Visualise as a heatmap.  
 16. Identify **delivery performance by customer**: proportion of delivered vs failed orders per customer.  
 17. Forecast **expected revenue for the next 7 days** based on the past month’s orders.
 
