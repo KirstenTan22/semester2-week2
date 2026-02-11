@@ -18,7 +18,23 @@ def customer_tickets(conn, customer_id):
     Include only tickets purchased by the given customer_id.
     Order results by film title alphabetically.
     """
-    pass
+    tickets = []
+    query = '''
+            SELECT F.title, S.screen, T.price
+            FROM customers C
+            LEFT JOIN tickets T ON C.customer_id = T.customer_id
+            JOIN screenings S ON T.screening_id = S.screening_id
+            JOIN films F ON S.film_id = F.film_id
+            WHERE C.customer_id = ?
+            ORDER BY F.title; 
+            '''
+    
+    cursor = conn.execute(query, (customer_id,))
+
+    for each in cursor:
+        tickets.append((each[0], each[1], each[2]))
+
+    return tickets
 
 
 def screening_sales(conn):
@@ -29,7 +45,22 @@ def screening_sales(conn):
     Include all screenings, even if tickets_sold is 0.
     Order results by tickets_sold descending.
     """
-    pass
+    screenings = []
+    query = '''
+            SELECT S.screening_id, F.title, COUNT(T.ticket_id)
+            FROM screenings S
+            JOIN films F ON S.film_id = F.film_id
+            LEFT JOIN tickets T ON S.screening_id = T.screening_id
+            GROUP BY S.screening_id
+            ORDER BY COUNT(T.ticket_id) DESC;
+            '''
+    
+    cursor = conn.execute(query)
+
+    for each in cursor:
+        screenings.append((each[0], each[1], each[2]))
+
+    return screenings
 
 
 def top_customers_by_spend(conn, limit):
@@ -42,4 +73,18 @@ def top_customers_by_spend(conn, limit):
     Order by total_spent descending.
     Limit the number of rows returned to `limit`.
     """
-    pass
+    customers = []
+    query = '''
+            SELECT C.customer_name, SUM(T.price)
+            FROM customers C
+            JOIN tickets T ON C.customer_id = T.customer_id
+            GROUP BY C.customer_id
+            ORDER BY SUM(T.price) DESC LIMIT ?;
+            '''
+    
+    cursor = conn.execute(query, (limit,))
+
+    for each in cursor:
+        customers.append((each[0], each[1]))
+
+    return customers
